@@ -1,8 +1,36 @@
-﻿@{
+﻿@model UploadModel
+
+@{
     ViewData["Title"] = "Home Page";
+    string message = TempData["Message"] as string;
 }
 
+
+
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-dark">
+            <p>@message</p>
+        </div>
+    }
+    <form class="w-50 p-3 mx-auto" method="post" enctype="multipart/form-data" asp-action="Index">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group mb-3">
+            <label for="inputEmail" class="form-label">Email address</label>
+            <input asp-for="Email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+            <span asp-validation-for="Email" class="text-danger"></span>
+            <div id="emailHelp" class="form-text">Email which will receive a secure link to the file.</div>
+        </div>
+        <div class="form-group mb-3">
+            <div class="input-group">
+                <input asp-for="File" type="file" accept=".docx" class="form-control" id="inputGroupFile">
+                <label class="input-group-text" for="inputGroupFile">Upload</label>
+            </div>
+            <span asp-validation-for="File" class="text-danger"></span>
+            <div id="emailHelp" class="form-text">We accept only .docx files.</div>
+        </div>
+        <button type="submit" class="float-start btn btn-primary">Submit</button>
+    </form>
 </div>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using reenbitBlob.Controllers.BlobStorage;
 using reenbitBlob.Models;
 using System.Diagnostics;
 
@@ -18,9 +19,19 @@ namespace reenbitBlob.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost] 
+        public async Task<IActionResult> Index(UploadModel uploadModel)
         {
-            return View();
+            if (!ModelState.IsValid)
+            {
+                return View(uploadModel);
+            }
+
+            var blobStorageController = BlobStorageSingleton.getInstance();
+            await blobStorageController.UploadFile(uploadModel.File);
+
+            TempData["Message"] = "File successfully uploaded!";
+            return RedirectToAction("Index");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
