@@ -28,7 +28,7 @@ namespace reenbitBlob.Controllers
             }
 
             var blobStorageController = BlobStorageSingleton.getInstance();
-            await blobStorageController.UploadFile(uploadModel.File);
+            await blobStorageController.UploadFileAsync(uploadModel.File, uploadModel.Email);
 
             TempData["Message"] = "File successfully uploaded!";
             return RedirectToAction("Index");
