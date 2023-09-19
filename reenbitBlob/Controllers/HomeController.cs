@@ -14,6 +14,8 @@ namespace reenbitBlob.Controllers
             _logger = logger;
         }
 
+        public HomeController() { }
+
         public IActionResult Index()
         {
             return View();
@@ -27,10 +29,17 @@ namespace reenbitBlob.Controllers
                 return View(uploadModel);
             }
 
-            var blobStorageController = BlobStorageSingleton.getInstance();
-            await blobStorageController.UploadFileAsync(uploadModel.File, uploadModel.Email);
+            try
+            {
+                var blobStorageController = BlobStorageSingleton.getInstance();
+                await blobStorageController.UploadFileAsync(uploadModel.File, uploadModel.Email);
 
-            TempData["Message"] = "File successfully uploaded!";
+                TempData["Message"] = "File successfully uploaded!";
+            } catch (Exception ex)
+            {
+                TempData["Message"] = "Something went wrong.";
+            }
+
             return RedirectToAction("Index");
         }
 
