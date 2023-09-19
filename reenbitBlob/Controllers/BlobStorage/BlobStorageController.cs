@@ -1,25 +1,27 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿using Azure.Security.KeyVault.Secrets;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 
 namespace reenbitBlob.Controllers
 {
     public class BlobStorageController
     {
-        public async Task UploadFileAsync(IFormFile file, string email)
+        public async Task UploadFileAsync(IFormFile file, string email, SecretClient secretClient)
         {
             try
             {
-                ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-                IConfiguration configuration = configurationBuilder.AddUserSecrets<BlobStorageController>().Build();
+                var accountName = await secretClient.GetSecretAsync("azureAccountName");
+                var accountKey = await secretClient.GetSecretAsync("azureAccountKey");
+                var containerName = await secretClient.GetSecretAsync("azureContainerName");
 
                 CloudStorageAccount cloudStorageAccount = new CloudStorageAccount(
                     new StorageCredentials(
-                        configuration.GetSection("azureCredentials")["accountName"],
-                        configuration.GetSection("azureCredentials")["accountKey"]
+                        accountName.Value.Value,
+                        accountKey.Value.Value
                         ), true);
 
                 var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
-                var container = cloudBlobClient.GetContainerReference(configuration.GetSection("azureInfo")["containerName"]);
+                var container = cloudBlobClient.GetContainerReference(containerName.Value.Value);
                 await container.CreateIfNotExistsAsync();
 
                 var blob = container.GetAppendBlobReference(file.FileName);

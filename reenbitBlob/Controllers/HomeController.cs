@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Mvc;
 using reenbitBlob.Controllers.BlobStorage;
 using reenbitBlob.Models;
 using System.Diagnostics;
@@ -8,10 +11,23 @@ namespace reenbitBlob.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private SecretClient secretClient;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            SecretClientOptions options = new SecretClientOptions()
+            {
+                Retry =
+                {
+                    Delay= TimeSpan.FromSeconds(2),
+                    MaxDelay = TimeSpan.FromSeconds(16),
+                    MaxRetries = 5,
+                    Mode = RetryMode.Exponential
+                }
+            };
+
+            secretClient = new SecretClient(new Uri(configuration["AzureKeyValutUrl"]), new DefaultAzureCredential(), options);
         }
 
         public IActionResult Index()
@@ -30,12 +46,12 @@ namespace reenbitBlob.Controllers
             try
             {
                 var blobStorageController = BlobStorageSingleton.getInstance();
-                await blobStorageController.UploadFileAsync(uploadModel.File, uploadModel.Email);
+                await blobStorageController.UploadFileAsync(uploadModel.File, uploadModel.Email, secretClient);
 
                 TempData["Message"] = "File successfully uploaded!";
             } catch (Exception ex)
             {
-                TempData["Message"] = "Something went wrong.";
+                TempData["Message"] = "Something went wrong." + ex.Message;
             }
 
             return RedirectToAction("Index");
