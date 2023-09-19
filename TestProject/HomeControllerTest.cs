@@ -1,6 +1,8 @@
+using Castle.Core.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Logging;
 using Moq;
 using reenbitBlob.Controllers;
 using System.Net.Http;
@@ -16,8 +18,9 @@ namespace TestProject
             
             var httpContext = new DefaultHttpContext();
             var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+            var logger = new Mock<ILogger<HomeController>>();
 
-            HomeController homeController = new HomeController()
+            HomeController homeController = new HomeController(logger.Object)
             {
                 TempData = tempData
             };
